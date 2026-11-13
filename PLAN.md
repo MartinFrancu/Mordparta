@@ -56,7 +56,10 @@ Operative skills, reliability of information (cheap later: "unconfirmed" tag + "
 multiple simultaneous cases, deadline pressure beyond 100 days, graph visualizations.
 
 ### Architecture
-- `index.html` + `game.js` (engine) + `case.js` (case data). Engine generic; the case is data.
+- **Content is separate from structure.** The engine defines a blank slate: entity types (people, places, objects,
+  timeline entries, leads, theories, checklist, scripted events) and how they behave. A case file only fills that slate
+  with story. A different case must run on the same engine with only a different case file – no engine edits.
+- `index.html` + `src/engine.js` (engine, UI) + `cases/<case>.js` (pure content, no logic).
 - Case data: people, places (+ travel times), objects, facts, leads (with depth levels → reveals), scripted events (time/condition triggers), theories, checklist conditions.
 - Most effort/risk = writing the case so that reading between the lines pays off.
 
@@ -91,3 +94,7 @@ User reads the twin case; agent builds the other, so the user plays it blind. Pa
 ## Open
 - Game text language: English assumed unless the user says Czech.
 - Network: news sites blocked; allowing cnn.iprima.cz, blesk.cz, denik.cz would allow reading full articles.
+- Český rozhlas is reachable (RSS: api.mujrozhlas.cz/rss/podcast/a55b623e-80ba-3b9c-9b6d-fd2a5e245276.rss), but has no
+  transcripts – only ~5-sentence blurbs + MP3. Transcribing (Whisper) would need croaod.cz + huggingface.co allowed.
+- Episode "Achillova pata vraždy" (Brno mordparta, partner reports missing woman) is a close match to B1 – possible
+  future source if transcribed.
