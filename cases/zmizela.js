@@ -219,10 +219,10 @@ window.CASE = {
       ],
     },
     {
-      id: 'phoneK', on: ['object:phoneK', 'person:klara'], by: 'Horáková', title: 'Request Klára\'s phone records', offer: 'I can file a request with the operator for her phone. Takes a couple of days.',
+      id: 'phoneK', on: ['object:phoneK', 'person:klara'], by: 'Horáková', title: 'Request Klára\'s phone records', offer: 'I can file a request with the operator for her phone. Quick to file, the answer takes a couple of days.',
       levels: [
         {
-          hours: 48,
+          hours: 1, wait: 47,
           report: 'The operator answered. Klára\'s phone last connected to the network on Monday 10 March at 22:14, through the cell covering Dolní Lhota. Then it went silent – switched off or destroyed – and never came back.\n\nOn Tuesday morning at the bus stop, she did not have a working phone.',
           effects: [
             { t: 'object', id: 'phoneK', text: 'Last signal Monday 10 March 22:14, Dolní Lhota cell. Never back on.' },
@@ -244,7 +244,7 @@ window.CASE = {
       id: 'bank', on: ['object:bank', 'person:klara'], by: 'Sedláček', title: 'Check Klára\'s bank account', offer: 'I can ask the bank for her account. People on the run need money.',
       levels: [
         {
-          hours: 24,
+          hours: 1, wait: 23,
           report: 'Last payment: Monday 10 March, 17:48, supermarket in Pardubice, 312 CZK. Nothing since. 41 000 CZK sitting on the account, untouched. People who run away take money.',
           effects: [
             { t: 'object', id: 'bank', text: 'Last payment Monday 17:48 in Pardubice. 41 000 CZK untouched since.' },
@@ -301,7 +301,7 @@ window.CASE = {
           hours: 2, report: 'He agreed straight away. Browsing history, last two weeks: flat listings in Pardubice, one-room flats, from April. Some pharmacy forums.',
           effects: [{ t: 'object', id: 'laptop', text: 'Looked at flats to rent in Pardubice, from April.' }, { t: 'tnote', id: 'voluntary', effect: 'support', text: 'She was looking for a flat.' }],
         },
-        { hours: 8, report: 'Emails: work, her mother, an online shop. Nothing was deleted, as far as the technicians can tell.', effects: [] },
+        { hours: 1, wait: 7, report: 'Emails: work, her mother, an online shop. Nothing was deleted, as far as the technicians can tell.', effects: [] },
       ],
     },
     {
@@ -430,7 +430,7 @@ window.CASE = {
       id: 'phoneP', on: ['object:phoneP', 'person:pavel'], by: 'Horáková', requires: ['met_pavel'], title: 'Request Pavel\'s phone location data', offer: 'I could request Kostka\'s phone location data. Just to tick the box.',
       levels: [
         {
-          hours: 48,
+          hours: 1, wait: 47,
           report: 'Pavel\'s phone, Monday night: from 23:41 to 02:07 it was connected to the tower at Bor – a tower that covers mostly forest. His hunting ground. At 02:30 it is back on the Dolní Lhota cell.',
           effects: [
             { t: 'object', id: 'phoneP', text: 'Monday 23:41–02:07 on the Bor forest tower.' },
@@ -469,20 +469,20 @@ window.CASE = {
     {
       id: 'envelope', on: 'object:idcard', by: 'Novák', requires: ['idcard'], title: 'Send the envelope and ID card to the lab', offer: 'The envelope should go to the lab. Prints, DNA.',
       levels: [
-        { hours: 24, report: 'No fingerprints on the ID card – wiped. None usable on the envelope. Address in block capitals.', effects: [{ t: 'object', id: 'idcard', text: 'ID card wiped clean. No usable prints.' }] },
+        { hours: 2, wait: 22, report: 'No fingerprints on the ID card – wiped. None usable on the envelope. Address in block capitals.', effects: [{ t: 'object', id: 'idcard', text: 'ID card wiped clean. No usable prints.' }] },
         {
-          hours: 48,
+          hours: 2, wait: 46,
           report: 'DNA from the flap and the stamp: a male profile. Not in the database.',
           effects: [{ t: 'object', id: 'idcard', text: 'Male DNA on flap and stamp. Unknown.' }, { t: 'flag', id: 'envelope_dna' }],
         },
-        { hours: 48, report: 'Nothing more to extract.', effects: [] },
+        { hours: 2, wait: 46, report: 'Nothing more to extract.', effects: [] },
       ],
     },
     {
       id: 'swabPavel', on: 'person:pavel', by: 'Novák', requires: ['envelope_dna', 'met_pavel'], title: 'Ask Pavel for a DNA swab', offer: 'Shall I ask Kostka for a voluntary swab to compare with the envelope?',
       levels: [
         {
-          hours: 24,
+          hours: 1, wait: 23,
           report: 'He gave it willingly. Almost eagerly. Result: no match. The DNA on the envelope is not his.',
           effects: [{ t: 'object', id: 'idcard', text: 'Envelope DNA is NOT Pavel\'s.' }, { t: 'tnote', id: 'partner', effect: 'weaken', text: 'His DNA is not on the envelope.' }],
         },
@@ -492,7 +492,7 @@ window.CASE = {
       id: 'swabOndra', on: 'person:ondra', by: 'Novák', requires: ['envelope_dna', 'stamp_trick'], title: 'Swab the apprentice, Ondřej Lukáš', offer: 'The apprentice who licked an envelope for Kostka. Let me swab him.',
       levels: [
         {
-          hours: 24,
+          hours: 2, wait: 22,
           report: 'Match. The envelope with Klára\'s ID card was sealed by the apprentice at the sawmill on Thursday, on Pavel Kostka\'s request – the day before it was posted in Pardubice.',
           effects: [
             { t: 'object', id: 'idcard', text: 'DNA = apprentice Ondřej, who sealed it for Pavel on Thursday.' },
@@ -567,7 +567,7 @@ window.CASE = {
       id: 'autopsy', on: ['object:autopsy', 'object:body'], by: 'Sedláček', requires: ['body'], title: 'Autopsy', offer: 'I will attend the autopsy.',
       levels: [
         {
-          hours: 24,
+          hours: 6, wait: 18,
           report: 'Eight stab wounds to the chest and back, a single-edged blade about 20 cm – a big kitchen knife. Five blows to the back of the head with a blunt object with a patterned surface – like a meat tenderiser. Two gunshot wounds to the left temple, rifle. Death: Monday night. Stomach: dinner.',
           effects: [
             { t: 'object', id: 'autopsy', text: '8 stab wounds (large kitchen knife), 5 blows (meat tenderiser?), 2 rifle shots to the temple. Died Monday night.' },
@@ -578,11 +578,11 @@ window.CASE = {
           ],
         },
         {
-          hours: 24,
+          hours: 1, wait: 23,
           report: 'Bullet fragments recovered from the skull: calibre 7×64, a hunting cartridge.',
           effects: [{ t: 'object', id: 'autopsy', text: 'Bullet fragments: 7×64.' }, { t: 'flag', id: 'bullet' }],
         },
-        { hours: 24, report: 'Toxicology clean. Nothing else.', effects: [] },
+        { hours: 1, wait: 23, report: 'Toxicology clean. Nothing else.', effects: [] },
       ],
     },
     {
@@ -598,7 +598,7 @@ window.CASE = {
           effects: [{ t: 'object', id: 'blood', text: 'Washed-out blood on the kitchen floor and in the sink trap.' }, { t: 'object', id: 'knifeblock', text: 'Large knife and meat tenderiser missing from the house.' }],
         },
         {
-          hours: 24,
+          hours: 2, wait: 22,
           report: 'Lab: the blood from the kitchen is Klára\'s.',
           effects: [
             { t: 'object', id: 'blood', text: 'DNA: Klára\'s blood.' },
@@ -619,7 +619,7 @@ window.CASE = {
       id: 'ballistics', on: 'object:rifles', by: 'Sedláček', requires: ['rifle_seized', 'bullet'], title: 'Ballistics: Pavel\'s rifle vs. the bullets', offer: 'We have his rifle and the fragments. Ballistics?',
       levels: [
         {
-          hours: 48,
+          hours: 2, wait: 46,
           report: 'Match. The bullets in Klára\'s head were fired from Pavel Kostka\'s 7×64 rifle.',
           effects: [{ t: 'object', id: 'rifles', text: 'Ballistics: the fatal bullets came from this rifle.' }, { t: 'check', id: 'link', text: 'Bullets fired from Pavel\'s rifle.' }, { t: 'flag', id: 'ballistics' }],
         },

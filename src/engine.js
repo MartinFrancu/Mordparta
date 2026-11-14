@@ -31,7 +31,7 @@
   const S = {
     t: 0, flags: new Set(), people: {}, objects: {}, places: {}, open: new Set(), timeline: [], theoryNotes: {}, slots: {},
     checks: {}, level: {}, ops: C.operatives.map((n) => ({ name: n, until: null, lead: null })),
-    scheduled: [], fired: new Set(), queue: [], tab: 'People', over: false,
+    scheduled: [], waiting: [], fired: new Set(), queue: [], tab: 'People', over: false,
   };
   const has = (f) => S.flags.has(f);
   const reqOk = (o) => (o.requires || []).every(has) && (!o.requiresAny || o.requiresAny.some(has)) && !(o.hiddenBy || []).some(has);
@@ -39,7 +39,8 @@
   const pname = (id) => (C.people[id] ? C.people[id].name : id);
 
   // ---------- availability ----------
-  const running = (id) => S.ops.some((o) => o.lead === id);
+  const running = (id) => S.ops.some((o) => o.lead === id) || S.waiting.some((w) => w.lead === id);
+  const waitingFor = (id) => S.waiting.find((w) => w.lead === id);
   const levelOf = (id) => S.level[id] || 0;
   const availableTheories = () => C.theories.filter(reqOk);
 
@@ -152,7 +153,7 @@
     render();
   }
   function nextTime() {
-    const ts = S.ops.filter((o) => o.lead).map((o) => o.until).concat(S.scheduled.map((s) => s.at));
+    const ts = S.ops.filter((o) => o.lead).map((o) => o.until).concat(S.scheduled.map((s) => s.at), S.waiting.map((w) => w.at));
     return ts.length ? Math.min(...ts) : null;
   }
   function advance() {
@@ -165,14 +166,26 @@
       S.queue.push({ title: ev.title, who: ev.who || '', text: ev.text, changes: resolve(ev.effects) });
     }
     S.scheduled = S.scheduled.filter((x) => x.at > S.t);
+    const finish = (l, who) => {
+      const lv = l.levels[levelOf(l.id)];
+      S.level[l.id] = levelOf(l.id) + 1;
+      if (!reqOk(l)) { S.queue.push({ title: l.title, who, text: 'Called off – no longer needed.', changes: [] }); return; }
+      S.queue.push({ title: l.title, who, text: lv.report, changes: resolve(lv.effects) });
+    };
+    // results that were waiting (lab, operator, bank…)
+    for (const w of S.waiting.filter((x) => x.at <= S.t)) finish(C.leads.find((x) => x.id === w.lead), w.who);
+    S.waiting = S.waiting.filter((x) => x.at > S.t);
     S.ops.forEach((o) => {
       if (!o.lead || o.until > S.t) return;
       const l = C.leads.find((x) => x.id === o.lead);
       const lv = l.levels[levelOf(l.id)];
-      S.level[l.id] = levelOf(l.id) + 1;
       o.lead = null; o.until = null;
-      if (!reqOk(l)) { S.queue.push({ title: l.title, who: o.name, text: 'Called off – no longer needed.', changes: [] }); return; }
-      S.queue.push({ title: l.title, who: o.name, text: lv.report, changes: resolve(lv.effects) });
+      if (lv.wait) {
+        S.waiting.push({ lead: l.id, at: S.t + lv.wait, who: o.name });
+        S.queue.push({ title: l.title, who: o.name, text: 'Done on my side – request filed. The result should arrive ' + fmtH(S.t + lv.wait) + '. I am free for something else.', changes: [] });
+        return;
+      }
+      finish(l, o.name);
     });
     if (S.t >= C.dayLimit * 24 && !S.over) {
       S.over = true;
@@ -211,15 +224,17 @@
     return leadsAt(key).map((l) => {
       const n = levelOf(l.id), lv = l.levels[n];
       const run = running(l.id);
-      const owner = run ? S.ops.find((o) => o.lead === l.id).name : null;
+      const w = waitingFor(l.id);
+      const owner = run && !w ? S.ops.find((o) => o.lead === l.id).name : null;
       const depth = Math.min(n, 3); // colour: 0 new, 1-3 deeper and deeper follow-ups
       const tag = n ? 'follow-up ' + n : 'new';
       const say = lv.offer ? esc(lv.offer) : n ? '<span class="keep">I could keep at it:</span> ' + esc(l.title.charAt(0).toLowerCase() + l.title.slice(1)) + '.' : esc(l.offer);
       return '<div class="lead d' + depth + (run ? ' running' : '') + '">' +
         '<div class="who"><span class="lv">' + tag + '</span> ' + esc(l.by) + ':</div>' +
         '<div>“' + say + '”</div>' +
-        '<div class="cost">Takes ' + dur(lv.hours) + '</div>' +
-        (run ? '<div class="dim">In progress – ' + esc(owner) + '</div>'
+        '<div class="cost">Takes ' + dur(lv.hours) + (lv.wait ? ' of work · result ' + dur(lv.wait) + ' later' : '') + '</div>' +
+        (w ? '<div class="dim">⏳ Waiting for the result – due ' + esc(fmtH(w.at)) + '</div>'
+          : run ? '<div class="dim">In progress – ' + esc(owner) + '</div>'
           : S.over ? '' : free.map(([o, i]) => '<button class="small" data-l="' + l.id + '" data-o="' + i + '">Send ' + esc(o.name) + '</button>').join('')) +
         '</div>';
     }).join('');
@@ -230,7 +245,7 @@
     const open = S.open.has(key);
     return '<div class="card' + (open ? ' open' : '') + '"><div class="head" data-k="' + key + '"><h3>' + (open ? '▾ ' : '▸ ') + esc(title) +
       (sub ? ' <span class="dim">– ' + esc(sub) + '</span>' : '') + '</h3>' +
-      (n ? '<span class="badge">' + n + ' action' + (n > 1 ? 's' : '') + '</span>' : '') + (busy ? '<span class="badge busy">' + busy + ' running</span>' : '') + '</div>' +
+      (n ? '<span class="badge">' + n + ' action' + (n > 1 ? 's' : '') + '</span>' : '') + (busy ? '<span class="badge busy">' + busy + ' in progress</span>' : '') + '</div>' +
       (open ? '<div class="body">' + (bodyHtml || '') + actionsHtml(key) + '</div>' : '') + '</div>';
   }
   function renderTabs() {

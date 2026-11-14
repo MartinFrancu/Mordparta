@@ -18,7 +18,8 @@ To play a different case, change the `<script src="cases/...">` line in `index.h
 | `trial` | `strengthFlags` (counted) + `verdicts: [{min, text}]` (first with `strength >= min` wins) |
 
 ## Leads
-`{id, on, by, title, offer, requires, requiresAny, hiddenBy, levels: [{hours, report, effects, offer?}]}`
+`{id, on, by, title, offer, requires, requiresAny, hiddenBy, levels: [{hours, wait?, report, effects, offer?}]}`
+- `hours`: how long the operative is busy. `wait` (optional): hours after that until the report arrives (lab, operator, bank). The operative is free meanwhile; the lead cannot be repeated until the result is in.
 - `on`: where the action is shown – `'person:id'`, `'place:id'` or `'object:id'`, or a list (first revealed one wins, e.g. `['object:phoneK', 'person:klara']`).
   The lead stays hidden until that target is revealed. Without `on` it goes to a "General leads" card.
 - Visible when all `requires` flags are set, at least one of `requiresAny` (if given), none of `hiddenBy`.
