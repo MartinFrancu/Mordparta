@@ -212,9 +212,12 @@
       const n = levelOf(l.id), lv = l.levels[n];
       const run = running(l.id);
       const owner = run ? S.ops.find((o) => o.lead === l.id).name : null;
-      return '<div class="lead' + (run ? ' running' : '') + '">' +
-        '<div class="who">' + esc(l.by) + (n ? ' – follow-up #' + n : '') + ':</div>' +
-        '<div>“' + esc(lv.offer || (n ? 'I could keep at it: ' + l.title.toLowerCase() + '.' : l.offer)) + '”</div>' +
+      const depth = Math.min(n, 3); // colour: 0 new, 1-3 deeper and deeper follow-ups
+      const tag = n ? 'follow-up ' + n : 'new';
+      const say = lv.offer ? esc(lv.offer) : n ? '<span class="keep">I could keep at it:</span> ' + esc(l.title.charAt(0).toLowerCase() + l.title.slice(1)) + '.' : esc(l.offer);
+      return '<div class="lead d' + depth + (run ? ' running' : '') + '">' +
+        '<div class="who"><span class="lv">' + tag + '</span> ' + esc(l.by) + ':</div>' +
+        '<div>“' + say + '”</div>' +
         '<div class="cost">Takes ' + dur(lv.hours) + '</div>' +
         (run ? '<div class="dim">In progress – ' + esc(owner) + '</div>'
           : S.over ? '' : free.map(([o, i]) => '<button class="small" data-l="' + l.id + '" data-o="' + i + '">Send ' + esc(o.name) + '</button>').join('')) +

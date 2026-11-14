@@ -54,3 +54,11 @@ h2 { font-size:16px; margin:0 0 8px; color:var(--acc); }
 #modal-box .changes li { margin:2px 0; }
 #modal-box p { white-space:pre-line; }
 @media (min-width: 700px) { #tabs { grid-template-columns:repeat(6,1fr); } #daybar { flex:1 1 160px; order:0; } #ops { order:0; } }
+/* follow-up depth colour: d0 new … d3 deep */
+.lead { border-left:4px solid var(--line); }
+.lead .lv { font-size:11px; text-transform:uppercase; padding:0 5px; border-radius:2px; color:#111; }
+.lead.d0 { border-left-color:var(--ok); } .lead.d0 .lv { background:var(--ok); }
+.lead.d1 { border-left-color:var(--acc); } .lead.d1 .lv, .lead.d1 .keep { background:var(--acc); }
+.lead.d2 { border-left-color:#d9773f; } .lead.d2 .lv, .lead.d2 .keep { background:#d9773f; }
+.lead.d3 { border-left-color:var(--bad); } .lead.d3 .lv, .lead.d3 .keep { background:var(--bad); }
+.lead .keep { color:#111; padding:0 3px; border-radius:2px; }
