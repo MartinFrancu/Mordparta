@@ -15,7 +15,8 @@
     ['link', 'Evidence linking suspect to body / scene'],
     ['method', 'Weapon / method of killing known'],
   ];
-  const TABS = ['People', 'Objects', 'Timeline', 'Theories', 'Trial'];
+  const TABS = ['People', 'Places', 'Objects', 'Timeline', 'Theories', 'Trial'];
+  const KIND_TAB = { person: 'People', place: 'Places', object: 'Objects' };
 
   // ---------- time ----------
   const parseT = (s) => { const [d, h] = s.split(' '); const [y, mo, da] = d.split('-').map(Number); const [hh, mm] = (h || '00:00').split(':').map(Number); return Date.UTC(y, mo - 1, da, hh, mm); };
@@ -28,7 +29,7 @@
 
   // ---------- state ----------
   const S = {
-    t: 0, flags: new Set(), people: {}, objects: {}, timeline: [], theoryNotes: {}, slots: {},
+    t: 0, flags: new Set(), people: {}, objects: {}, places: {}, open: new Set(), timeline: [], theoryNotes: {}, slots: {},
     checks: {}, level: {}, ops: C.operatives.map((n) => ({ name: n, until: null, lead: null })),
     scheduled: [], fired: new Set(), queue: [], tab: 'People', over: false,
   };
@@ -40,8 +41,17 @@
   // ---------- availability ----------
   const running = (id) => S.ops.some((o) => o.lead === id);
   const levelOf = (id) => S.level[id] || 0;
-  const availableLeads = () => C.leads.filter((l) => reqOk(l) && levelOf(l.id) < l.levels.length);
   const availableTheories = () => C.theories.filter(reqOk);
+
+  // ---------- where an action lives: first revealed target in lead.on ----------
+  const revealed = (key) => { const [k, id] = key.split(':'); return !!{ person: S.people, place: S.places, object: S.objects }[k][id]; };
+  const targetOf = (l) => [].concat(l.on || []).find(revealed) || 'desk';
+  const leadsAt = (key) => availableLeads().filter((l) => targetOf(l) === key);
+  const targetName = (key) => { const [k, id] = key.split(':'); return k === 'person' ? pname(id) : k === 'place' ? place(id) : k === 'object' ? C.objects[id].name : 'your desk'; };
+  const idle = (l) => !running(l.id);
+  // A lead shows only once its target is known; leads without `on` go to the desk.
+  const availableLeads = () => C.leads.filter((l) => reqOk(l) && levelOf(l.id) < l.levels.length && (!l.on || targetOf(l) !== 'desk'));
+  const tabCount = (tab) => availableLeads().filter((l) => idle(l) && KIND_TAB[targetOf(l).split(':')[0]] === tab).length;
 
   // ---------- effects ----------
   function apply(effects, changes) {
@@ -65,7 +75,13 @@
           if (e.text) { S.objects[e.id].notes.push(e.text); changes.push(esc(o.name) + ': ' + esc(e.text)); }
           break;
         }
+        case 'place': {
+          if (!S.places[e.id]) { S.places[e.id] = { notes: [] }; changes.push('New place: <b>' + esc(place(e.id)) + '</b>'); }
+          if (e.text) { S.places[e.id].notes.push(e.text); changes.push(esc(place(e.id)) + ': ' + esc(e.text)); }
+          break;
+        }
         case 'tl': {
+          if (!S.places[e.where]) S.places[e.where] = { notes: [] };
           const x = Object.assign({}, e, { a: toHours(e.from), b: toHours(e.to || e.from) });
           S.timeline.push(x);
           changes.push('Timeline: ' + esc(pname(e.who)) + ' @ ' + esc(place(e.where)) + ', ' + esc(fmtCase(e.from)) + ' (' + e.status + ')');
@@ -123,7 +139,7 @@
     checkAlibis(changes);
     for (const ev of C.events) if (ev.requires && !S.fired.has(ev.id) && !S.scheduled.some((s) => s.id === ev.id) && reqOk(ev)) S.scheduled.push({ id: ev.id, at: S.t + (ev.delay || 0) });
     for (const x of availableTheories()) if (!thBefore.has(x.id)) changes.push('New working theory (' + esc(x.by) + '): <b>' + esc(x.title) + '</b>');
-    for (const l of availableLeads()) if (!leadsBefore.has(l.id) && levelOf(l.id) === 0) changes.push('New lead (' + esc(l.by) + '): ' + esc(l.title));
+    for (const l of availableLeads()) if (!leadsBefore.has(l.id) && levelOf(l.id) === 0) changes.push('New lead (' + esc(l.by) + '): ' + esc(l.title) + ' <span class="dim">→ ' + esc(targetName(targetOf(l))) + '</span>');
     return changes;
   }
 
@@ -183,16 +199,16 @@
     $('dayfill').style.width = Math.min(100, (day / C.dayLimit) * 100) + '%';
     $('daylabel').textContent = 'Day ' + (Math.floor(day) + 1) + ' / ' + C.dayLimit;
     $('ops').innerHTML = S.ops.map((o) => o.lead
-      ? '<span class="op busy">' + esc(o.name) + ': busy until ' + esc(fmtH(o.until)) + '</span>'
+      ? '<span class="op busy">' + esc(o.name) + ': busy → ' + esc(fmtH(o.until).replace(/ \d{4},/, '')) + '</span>'
       : '<span class="op free">' + esc(o.name) + ': free</span>').join('');
     $('continue').textContent = nextTime() === null ? 'Wait a day ▶' : 'Continue ▶';
     $('continue').disabled = S.over;
-    renderLeads();
     renderTabs();
   }
-  function renderLeads() {
+  // Actions block inside a card.
+  function actionsHtml(key) {
     const free = S.ops.map((o, i) => [o, i]).filter(([o]) => !o.lead);
-    const html = availableLeads().map((l) => {
+    return leadsAt(key).map((l) => {
       const n = levelOf(l.id), lv = l.levels[n];
       const run = running(l.id);
       const owner = run ? S.ops.find((o) => o.lead === l.id).name : null;
@@ -204,13 +220,23 @@
           : S.over ? '' : free.map(([o, i]) => '<button class="small" data-l="' + l.id + '" data-o="' + i + '">Send ' + esc(o.name) + '</button>').join('')) +
         '</div>';
     }).join('');
-    $('leads').innerHTML = html || '<div class="dim">No leads left.</div>';
-    $('leads').querySelectorAll('button').forEach((b) => (b.onclick = () => assign(b.dataset.l, +b.dataset.o)));
+  }
+  // Collapsible card: header always visible, body (facts + actions) when open.
+  function card(key, title, sub, bodyHtml) {
+    const n = leadsAt(key).filter(idle).length, busy = leadsAt(key).length - n;
+    const open = S.open.has(key);
+    return '<div class="card' + (open ? ' open' : '') + '"><div class="head" data-k="' + key + '"><h3>' + (open ? '▾ ' : '▸ ') + esc(title) +
+      (sub ? ' <span class="dim">– ' + esc(sub) + '</span>' : '') + '</h3>' +
+      (n ? '<span class="badge">' + n + ' action' + (n > 1 ? 's' : '') + '</span>' : '') + (busy ? '<span class="badge busy">' + busy + ' running</span>' : '') + '</div>' +
+      (open ? '<div class="body">' + (bodyHtml || '') + actionsHtml(key) + '</div>' : '') + '</div>';
   }
   function renderTabs() {
-    $('tabs').innerHTML = TABS.map((t) => '<button class="' + (t === S.tab ? 'on' : '') + '">' + t + '</button>').join('');
-    $('tabs').querySelectorAll('button').forEach((b) => (b.onclick = () => { S.tab = b.textContent; renderTabs(); }));
-    $('view').innerHTML = VIEWS[S.tab]();
+    $('tabs').innerHTML = TABS.map((t) => { const n = tabCount(t); return '<button data-t="' + t + '" class="' + (t === S.tab ? 'on' : '') + '">' + t + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>'; }).join('');
+    $('tabs').querySelectorAll('button').forEach((b) => (b.onclick = () => { S.tab = b.dataset.t; renderTabs(); }));
+    const desk = leadsAt('desk');
+    $('view').innerHTML = (desk.length ? card('desk', 'General leads', '', '') : '') + VIEWS[S.tab]();
+    $('view').querySelectorAll('.head').forEach((h) => (h.onclick = () => { const k = h.dataset.k; S.open.has(k) ? S.open.delete(k) : S.open.add(k); renderTabs(); }));
+    $('view').querySelectorAll('button[data-l]').forEach((b) => (b.onclick = () => assign(b.dataset.l, +b.dataset.o)));
     const tb = $('trialbtn');
     if (tb) tb.onclick = trial;
   }
@@ -220,8 +246,16 @@
       if (!ids.length) return '<div class="dim">Nobody known yet.</div>';
       return ids.map((id) => {
         const p = C.people[id], st = S.people[id];
-        return '<div class="card"><h3>' + esc(p.name) + ' <span class="dim">– ' + esc(p.role) + '</span></h3>' +
-          st.info.map((i) => '<div><span class="k">' + esc(i.key) + ':</span> ' + esc(i.text) + '</div>').join('') + '</div>';
+        return card('person:' + id, p.name, p.role, st.info.map((i) => '<div><span class="k">' + esc(i.key) + ':</span> ' + esc(i.text) + '</div>').join(''));
+      }).join('');
+    },
+    Places() {
+      const ids = Object.keys(S.places);
+      if (!ids.length) return '<div class="dim">No places known yet.</div>';
+      return ids.map((id) => {
+        const here = S.timeline.filter((e) => e.where === id).length;
+        return card('place:' + id, place(id), '', S.places[id].notes.map((n) => '<div>• ' + esc(n) + '</div>').join('') +
+          (here ? '<div class="dim">' + here + ' timeline entr' + (here > 1 ? 'ies' : 'y') + ' here.</div>' : ''));
       }).join('');
     },
     Objects() {
@@ -229,8 +263,8 @@
       if (!ids.length) return '<div class="dim">No objects or findings yet.</div>';
       return ids.map((id) => {
         const o = C.objects[id];
-        return '<div class="card"><h3>' + esc(o.name) + '</h3><div class="dim">' + esc(o.desc || '') + '</div>' +
-          S.objects[id].notes.map((n) => '<div>• ' + esc(n) + '</div>').join('') + '</div>';
+        return card('object:' + id, o.name, '', (o.desc ? '<div class="dim">' + esc(o.desc) + '</div>' : '') +
+          S.objects[id].notes.map((n) => '<div>• ' + esc(n) + '</div>').join(''));
       }).join('');
     },
     Timeline() {

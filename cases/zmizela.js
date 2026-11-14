@@ -29,6 +29,11 @@ window.CASE = {
     { t: 'info', id: 'klara', key: 'Background', text: '29, pharmacy assistant in Pardubice. Lives with partner in Dolní Lhota.' },
     { t: 'person', id: 'pavel' },
     { t: 'info', id: 'pavel', key: 'Status', text: 'Reported Klára missing on Wednesday 12 March, 18:10.' },
+    { t: 'person', id: 'jana' },
+    { t: 'info', id: 'jana', key: 'Background', text: 'Lives in Pardubice.' },
+    { t: 'object', id: 'report', text: 'Last seen (per Pavel): Tuesday 06:40, leaving for the 06:52 bus. Wearing a red winter coat.' },
+    { t: 'object', id: 'bus' },
+    { t: 'place', id: 'house' }, { t: 'place', id: 'lhota' }, { t: 'place', id: 'pce', text: 'Klára\'s pharmacy and her mother are here.' },
     { t: 'tl', who: 'klara', where: 'busstop', from: '2014-03-11 06:40', to: '2014-03-11 06:52', status: 'claimed', text: 'Walked to the 06:52 bus to Pardubice (per partner Pavel).' },
   ],
 
@@ -43,6 +48,7 @@ window.CASE = {
     sawmill: { name: 'Sawmill, Holice', travel: { hk: 40, brno: 150 } },
     hk: { name: 'Hradec Králové', travel: { brno: 140 } },
     brno: { name: 'Brno', travel: {} },
+    ponds: { name: 'Fish ponds behind Dolní Lhota', travel: { house: 5, lhota: 5, busstop: 5, bor: 10, pce: 25 } },
   },
 
   people: {
@@ -56,6 +62,7 @@ window.CASE = {
     martin: { name: 'Martin Šebek', role: 'man from Brno who texted Klára' },
     bures: { name: 'Karel Bureš', role: 'foreman at the Holice sawmill' },
     ondra: { name: 'Ondřej Lukáš', role: 'apprentice at the sawmill' },
+    kalinova: { name: 'JUDr. Eva Kalinová', role: 'lawyer in Pardubice' },
   },
 
   objects: {
@@ -71,6 +78,13 @@ window.CASE = {
     body: { name: 'Body of Klára Vávrová', desc: 'Found in the Bor forest.' },
     autopsy: { name: 'Autopsy report', desc: '' },
     blood: { name: 'Blood traces in the kitchen', desc: 'Found with luminol.' },
+    report: { name: 'Missing-person report', desc: 'Filed by Pavel Kostka, Wednesday 18:10.' },
+    calendar: { name: 'Wall calendar in the kitchen', desc: 'Pharmacy giveaway calendar on the fridge.' },
+    boots: { name: 'Hunting boots by the door', desc: 'In the Kostka hallway.' },
+    laptop: { name: 'Klára\'s laptop', desc: 'On the living-room table.' },
+    car: { name: 'Pavel\'s Škoda Octavia estate', desc: 'Dark green. Parked in the yard.' },
+    wardrobe: { name: 'Klára\'s wardrobe', desc: 'Bedroom, Kostka house.' },
+    bus: { name: 'Bus timetable, Dolní Lhota', desc: 'Line 18, to Pardubice.' },
   },
 
   theories: [
@@ -101,13 +115,14 @@ window.CASE = {
   leads: [
     // ---------------- start leads ----------------
     {
-      id: 'pavel', by: 'Novák', title: 'Interview the partner, Pavel Kostka', offer: 'I could go and talk to the partner. He reported it, he will want to talk.',
+      id: 'pavel', on: 'person:pavel', by: 'Novák', title: 'Interview the partner, Pavel Kostka', offer: 'I could go and talk to the partner. He reported it, he will want to talk.',
       levels: [
         {
           hours: 1,
           report: 'Kostka was waiting for us at the gate. 38, works at the sawmill in Holice, drives a dark green Škoda Octavia estate.\n\nHis story: Monday evening they watched TV, went to bed around ten. He slept through the night. Tuesday 06:40 Klára left on foot for the 06:52 bus, as every working day. He left for the sawmill at seven. She did not come home Tuesday – he thought she stayed at her mother\'s. Wednesday he got worried and called us.\n\nCalm. Cooperative. A lot of precise times for a man to whom nothing happened.',
           effects: [
             { t: 'info', id: 'pavel', key: 'Background', text: '38, works at the sawmill in Holice. Drives a dark green Škoda Octavia estate.' },
+            { t: 'object', id: 'car' },
             { t: 'info', id: 'pavel', key: 'Relationship', text: 'With Klára 4 years. The house is his.' },
             { t: 'tl', id: 'pavel_night', who: 'pavel', where: 'house', from: '2014-03-10 22:00', to: '2014-03-11 06:40', status: 'claimed', text: 'Says he slept at home all night.' },
             { t: 'tl', who: 'pavel', where: 'sawmill', from: '2014-03-11 07:15', to: '2014-03-11 15:00', status: 'claimed', text: 'Says he was at work.' },
@@ -121,6 +136,7 @@ window.CASE = {
           effects: [
             { t: 'person', id: 'tomas' },
             { t: 'info', id: 'pavel', key: 'Hobby', text: 'Hunter. Member of the local association, his ground is the Bor forest. Says he searched Bor himself.' },
+            { t: 'place', id: 'bor', text: 'Pavel\'s hunting ground. 900 hectares.' }, { t: 'place', id: 'ponds', text: 'Pavel: "She liked walking there."' },
             { t: 'flag', id: 'ex_known' }, { t: 'flag', id: 'ponds_suggested' }, { t: 'flag', id: 'hunter_known' },
           ],
         },
@@ -137,7 +153,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'house', by: 'Horáková', title: 'Look around the house', offer: 'Kostka will let us look around the house. No warrant, just looking.',
+      id: 'house', on: 'place:house', by: 'Horáková', title: 'Look around the house', offer: 'Kostka will let us look around the house. No warrant, just looking.',
       levels: [
         {
           hours: 2,
@@ -146,19 +162,23 @@ window.CASE = {
             { t: 'object', id: 'bathroom', text: 'Glasses and lens case on the bathroom shelf; charger still plugged in.' },
             { t: 'object', id: 'knifeblock', text: 'One slot empty – the largest knife is missing.' },
             { t: 'tnote', id: 'voluntary', effect: 'weaken', text: 'She left her glasses, lenses and charger.' },
+            { t: 'object', id: 'calendar', text: 'Wednesday 12 March: "K. 10:00" in Klára\'s handwriting.' },
+            { t: 'object', id: 'boots', text: 'Pair of hunting boots, cleaned and still damp.' },
+            { t: 'object', id: 'laptop' },
+            { t: 'object', id: 'wardrobe' },
             { t: 'flag', id: 'house_seen' },
           ],
         },
         {
           hours: 4,
           report: 'Without a warrant we can only look. Wardrobe full of her clothes, her suitcase on top of it, dusty. Nothing packed.',
-          effects: [{ t: 'tnote', id: 'voluntary', effect: 'weaken', text: 'Nothing packed, suitcase untouched.' }],
+          effects: [{ t: 'object', id: 'wardrobe', text: 'Full of her clothes. Suitcase on top, dusty.' }, { t: 'tnote', id: 'voluntary', effect: 'weaken', text: 'Nothing packed, suitcase untouched.' }],
         },
         { hours: 8, report: 'There is nothing more to see without a warrant.', effects: [] },
       ],
     },
     {
-      id: 'mother', by: 'Sedláček', title: 'Talk to Klára\'s mother', offer: 'I could visit the mother. Mothers know things.',
+      id: 'mother', on: 'person:jana', by: 'Sedláček', title: 'Talk to Klára\'s mother', offer: 'I could visit the mother. Mothers know things.',
       levels: [
         {
           hours: 1,
@@ -178,7 +198,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'canvass', by: 'Novák', title: 'Door-to-door in Dolní Lhota', offer: 'Standard procedure: knock on every door in the village.',
+      id: 'canvass', on: 'place:lhota', by: 'Novák', title: 'Door-to-door in Dolní Lhota', offer: 'Standard procedure: knock on every door in the village.',
       levels: [
         {
           hours: 4,
@@ -199,7 +219,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'phoneK', by: 'Horáková', title: 'Request Klára\'s phone records', offer: 'I can file a request with the operator for her phone. Takes a couple of days.',
+      id: 'phoneK', on: ['object:phoneK', 'person:klara'], by: 'Horáková', title: 'Request Klára\'s phone records', offer: 'I can file a request with the operator for her phone. Takes a couple of days.',
       levels: [
         {
           hours: 48,
@@ -221,7 +241,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'bank', by: 'Sedláček', title: 'Check Klára\'s bank account', offer: 'I can ask the bank for her account. People on the run need money.',
+      id: 'bank', on: ['object:bank', 'person:klara'], by: 'Sedláček', title: 'Check Klára\'s bank account', offer: 'I can ask the bank for her account. People on the run need money.',
       levels: [
         {
           hours: 24,
@@ -241,7 +261,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'hospitals', by: 'Sedláček', title: 'Check hospitals, morgues and accident reports', offer: 'Routine: hospitals, morgues, traffic accidents.',
+      id: 'hospitals', on: 'person:klara', by: 'Sedláček', title: 'Check hospitals, morgues and accident reports', offer: 'Routine: hospitals, morgues, traffic accidents.',
       levels: [
         { hours: 2, report: 'No unidentified women in hospitals or morgues in the region. No accidents involving a pedestrian on Tuesday.', effects: [{ t: 'tnote', id: 'accident', effect: 'weaken', text: 'No hospital, morgue or accident record.' }] },
         { hours: 4, report: 'Neighbouring regions too. Nothing.', effects: [] },
@@ -249,9 +269,58 @@ window.CASE = {
       ],
     },
 
+    {
+      id: 'pharmacy', on: 'place:pce', by: 'Sedláček', title: 'Ask at Klára\'s pharmacy', offer: 'I could drop by the pharmacy where she works. Shift plans, colleagues.',
+      levels: [
+        {
+          hours: 2,
+          report: 'The manager: five years, never late, never sick without calling. On Tuesday nobody called in. They tried her phone at nine – dead. Colleague Lucie Dvořáková was the one who worried most.',
+          effects: [{ t: 'info', id: 'klara', key: 'Work', text: 'Five years at the pharmacy, never missed a shift. No call on Tuesday.' }, { t: 'person', id: 'lucie' }, { t: 'flag', id: 'lucie_known' }, { t: 'tnote', id: 'voluntary', effect: 'weaken', text: 'Never missed a shift in five years.' }],
+        },
+        { hours: 4, report: 'Stock and till checked, just in case. Nothing missing. No drugs gone.', effects: [] },
+      ],
+    },
+    {
+      id: 'busco', on: 'object:bus', by: 'Novák', title: 'Ask the bus company', offer: 'Line 18 – the bus company might have ticket data from Tuesday.',
+      levels: [
+        { hours: 4, report: 'Drivers sell paper tickets; nothing is recorded by name. The 06:52 left on time. No incidents reported.', effects: [] },
+        { hours: 4, report: 'The bus has no camera. Nothing more there.', effects: [] },
+      ],
+    },
+    {
+      id: 'calendar', on: 'object:calendar', by: 'Horáková', title: 'Ask Pavel about the calendar note', offer: '"K. 10:00" on Wednesday. Shall I ask Kostka what it means?',
+      levels: [
+        { hours: 1, report: 'He shrugged. "Dentist, probably. Or the hairdresser. She wrote everything there." He did not look at it.', effects: [{ t: 'object', id: 'calendar', text: 'Pavel: "Dentist, probably."' }] },
+        { hours: 2, report: 'Her dentist and hairdresser in Pardubice: no appointment on Wednesday.', effects: [{ t: 'object', id: 'calendar', text: 'Not the dentist, not the hairdresser.' }] },
+      ],
+    },
+    {
+      id: 'laptop', on: 'object:laptop', by: 'Sedláček', title: 'Borrow Klára\'s laptop', offer: 'Kostka might let us take her laptop. Emails, browsing.',
+      levels: [
+        {
+          hours: 2, report: 'He agreed straight away. Browsing history, last two weeks: flat listings in Pardubice, one-room flats, from April. Some pharmacy forums.',
+          effects: [{ t: 'object', id: 'laptop', text: 'Looked at flats to rent in Pardubice, from April.' }, { t: 'tnote', id: 'voluntary', effect: 'support', text: 'She was looking for a flat.' }],
+        },
+        { hours: 8, report: 'Emails: work, her mother, an online shop. Nothing was deleted, as far as the technicians can tell.', effects: [] },
+      ],
+    },
+    {
+      id: 'car', on: 'object:car', by: 'Horáková', title: 'Have a look at Pavel\'s car', offer: 'Just walk around the Octavia in the yard. Through the windows, no warrant.',
+      levels: [
+        { hours: 1, report: 'Very clean, inside and out. Freshly vacuumed. The boot liner looks new – the price sticker is still on it.', effects: [{ t: 'object', id: 'car', text: 'Spotless. Brand-new boot liner, sticker still on.' }] },
+        { hours: 2, report: 'Nothing more to see through glass.', effects: [] },
+      ],
+    },
+    {
+      id: 'boots', on: 'object:boots', by: 'Novák', title: 'Ask about the wet boots', offer: 'Those boots by the door were still wet. Shall I ask?',
+      levels: [
+        { hours: 1, report: '"I was out looking for her in the forest, what do you expect?" Fair enough.', effects: [] },
+      ],
+    },
+
     // ---------------- unlocked leads ----------------
     {
-      id: 'hajkova', by: 'Novák', requires: ['hajkova_known'], title: 'Talk to Mrs. Hájková', offer: 'Shall I go back to the old lady across the road? She wants someone serious.',
+      id: 'hajkova', on: 'person:hajkova', by: 'Novák', requires: ['hajkova_known'], title: 'Talk to Mrs. Hájková', offer: 'Shall I go back to the old lady across the road? She wants someone serious.',
       levels: [
         {
           hours: 1,
@@ -272,7 +341,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'lucie', by: 'Horáková', requires: ['lucie_known'], title: 'Talk to Lucie Dvořáková', offer: 'Let me talk to the best friend from the pharmacy.',
+      id: 'lucie', on: 'person:lucie', by: 'Horáková', requires: ['lucie_known'], title: 'Talk to Lucie Dvořáková', offer: 'Let me talk to the best friend from the pharmacy.',
       levels: [
         {
           hours: 1,
@@ -287,13 +356,13 @@ window.CASE = {
         {
           hours: 4,
           report: 'It was about the money. Klára wanted her 400 thousand back. Pavel told her she would "never see a crown". She had an appointment with a lawyer, JUDr. Kalinová, on Wednesday 12 March. She never made it.',
-          effects: [{ t: 'info', id: 'klara', key: 'Money', text: 'Wanted her 400 000 back. Lawyer appointment Wednesday 12 March.' }, { t: 'slot', id: 'partner', slot: 'Motive', value: 'money – she wanted her 400 000 back' }, { t: 'flag', id: 'lawyer_known' }],
+          effects: [{ t: 'info', id: 'klara', key: 'Money', text: 'Wanted her 400 000 back. Lawyer appointment Wednesday 12 March.' }, { t: 'slot', id: 'partner', slot: 'Motive', value: 'money – she wanted her 400 000 back' }, { t: 'person', id: 'kalinova' }, { t: 'flag', id: 'lawyer_known' }],
         },
         { hours: 8, report: 'She cried a lot. Nothing new.', effects: [] },
       ],
     },
     {
-      id: 'lawyer', by: 'Sedláček', requires: ['lawyer_known'], title: 'Contact the lawyer, JUDr. Kalinová', offer: 'I could check the lawyer Lucie mentioned.',
+      id: 'lawyer', on: 'person:kalinova', by: 'Sedláček', requires: ['lawyer_known'], title: 'Contact the lawyer, JUDr. Kalinová', offer: 'I could check the lawyer Lucie mentioned.',
       levels: [
         {
           hours: 2,
@@ -309,7 +378,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'tomas', by: 'Sedláček', requires: ['ex_known'], title: 'Find and interview the ex, Tomáš Řezníček', offer: 'I could find the ex-boyfriend Kostka mentioned.',
+      id: 'tomas', on: 'person:tomas', by: 'Sedláček', requires: ['ex_known'], title: 'Find and interview the ex, Tomáš Řezníček', offer: 'I could find the ex-boyfriend Kostka mentioned.',
       levels: [
         {
           hours: 4,
@@ -331,7 +400,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'martin', by: 'Novák', requires: ['martin_known'], title: 'Trace the Brno number (Martin Šebek)', offer: 'The Brno number. Could be a lover she ran to.',
+      id: 'martin', on: 'person:martin', by: 'Novák', requires: ['martin_known'], title: 'Trace the Brno number (Martin Šebek)', offer: 'The Brno number. Could be a lover she ran to.',
       levels: [
         {
           hours: 8,
@@ -350,7 +419,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'ponds', by: 'Horáková', requires: ['ponds_suggested'], title: 'Search the fish ponds with divers', offer: 'Kostka keeps saying the ponds. I can get fire brigade divers.',
+      id: 'ponds', on: 'place:ponds', by: 'Horáková', requires: ['ponds_suggested'], title: 'Search the fish ponds with divers', offer: 'Kostka keeps saying the ponds. I can get fire brigade divers.',
       levels: [
         { hours: 8, report: 'Three ponds, cold water, zero visibility. Nothing.', effects: [] },
         { hours: 16, report: 'All seven ponds. Nothing. Kostka came to watch and brought coffee for the divers.', effects: [{ t: 'info', id: 'pavel', key: 'Behaviour', text: 'Came to watch the pond search, brought coffee for divers.' }] },
@@ -358,7 +427,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'phoneP', by: 'Horáková', requires: ['met_pavel'], title: 'Request Pavel\'s phone location data', offer: 'I could request Kostka\'s phone location data. Just to tick the box.',
+      id: 'phoneP', on: ['object:phoneP', 'person:pavel'], by: 'Horáková', requires: ['met_pavel'], title: 'Request Pavel\'s phone location data', offer: 'I could request Kostka\'s phone location data. Just to tick the box.',
       levels: [
         {
           hours: 48,
@@ -378,7 +447,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'sawmill', by: 'Sedláček', requires: ['met_pavel'], title: 'Check Pavel at the sawmill', offer: 'I could check with his employer at the sawmill.',
+      id: 'sawmill', on: 'place:sawmill', by: 'Sedláček', requires: ['met_pavel'], title: 'Check Pavel at the sawmill', offer: 'I could check with his employer at the sawmill.',
       levels: [
         {
           hours: 2,
@@ -398,7 +467,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'envelope', by: 'Novák', requires: ['idcard'], title: 'Send the envelope and ID card to the lab', offer: 'The envelope should go to the lab. Prints, DNA.',
+      id: 'envelope', on: 'object:idcard', by: 'Novák', requires: ['idcard'], title: 'Send the envelope and ID card to the lab', offer: 'The envelope should go to the lab. Prints, DNA.',
       levels: [
         { hours: 24, report: 'No fingerprints on the ID card – wiped. None usable on the envelope. Address in block capitals.', effects: [{ t: 'object', id: 'idcard', text: 'ID card wiped clean. No usable prints.' }] },
         {
@@ -410,7 +479,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'swabPavel', by: 'Novák', requires: ['envelope_dna', 'met_pavel'], title: 'Ask Pavel for a DNA swab', offer: 'Shall I ask Kostka for a voluntary swab to compare with the envelope?',
+      id: 'swabPavel', on: 'person:pavel', by: 'Novák', requires: ['envelope_dna', 'met_pavel'], title: 'Ask Pavel for a DNA swab', offer: 'Shall I ask Kostka for a voluntary swab to compare with the envelope?',
       levels: [
         {
           hours: 24,
@@ -420,7 +489,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'swabOndra', by: 'Novák', requires: ['envelope_dna', 'stamp_trick'], title: 'Swab the apprentice, Ondřej Lukáš', offer: 'The apprentice who licked an envelope for Kostka. Let me swab him.',
+      id: 'swabOndra', on: 'person:ondra', by: 'Novák', requires: ['envelope_dna', 'stamp_trick'], title: 'Swab the apprentice, Ondřej Lukáš', offer: 'The apprentice who licked an envelope for Kostka. Let me swab him.',
       levels: [
         {
           hours: 24,
@@ -435,7 +504,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'post', by: 'Sedláček', requires: ['idcard'], title: 'Get the post office CCTV', offer: 'Pardubice 1 has cameras. I could sit through Friday\'s footage.',
+      id: 'post', on: ['object:cctv', 'object:idcard'], by: 'Sedláček', requires: ['idcard'], title: 'Get the post office CCTV', offer: 'Pardubice 1 has cameras. I could sit through Friday\'s footage.',
       levels: [
         { hours: 8, report: 'Friday morning, hundreds of people. Nothing yet. I need more hours with it.', effects: [] },
         {
@@ -452,7 +521,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'hunters', by: 'Novák', requires: ['hunter_known'], title: 'Talk to the hunting association', offer: 'Kostka is a hunter. The association will know him and his forest.',
+      id: 'hunters', on: ['person:maly', 'place:bor'], by: 'Novák', requires: ['hunter_known'], title: 'Talk to the hunting association', offer: 'Kostka is a hunter. The association will know him and his forest.',
       levels: [
         {
           hours: 2,
@@ -477,7 +546,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'searchBor', by: 'Horáková', requires: ['hunter_known'], hiddenBy: ['body'], title: 'Search the Bor forest with cadaver dogs', offer: 'Bor is huge, but with dogs and a line of cadets we can comb it.',
+      id: 'searchBor', on: 'place:bor', by: 'Horáková', requires: ['hunter_known'], hiddenBy: ['body'], title: 'Search the Bor forest with cadaver dogs', offer: 'Bor is huge, but with dogs and a line of cadets we can comb it.',
       levels: [
         { hours: 16, report: '900 hectares. We covered the western third. Nothing.', effects: [] },
         { hours: 24, report: 'The middle part. Nothing. Cadets are exhausted.', effects: [] },
@@ -485,7 +554,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'dig', by: 'Horáková', requires: ['dug_spot'], hiddenBy: ['body'], title: 'Dig at the spot near Pavel\'s feeder', offer: 'The spot Malý saw near Kostka\'s feeder. Let me take a dog and a spade.',
+      id: 'dig', on: 'place:bor', by: 'Horáková', requires: ['dug_spot'], hiddenBy: ['body'], title: 'Dig at the spot near Pavel\'s feeder', offer: 'The spot Malý saw near Kostka\'s feeder. Let me take a dog and a spade.',
       levels: [
         {
           hours: 6,
@@ -495,7 +564,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'autopsy', by: 'Sedláček', requires: ['body'], title: 'Autopsy', offer: 'I will attend the autopsy.',
+      id: 'autopsy', on: ['object:autopsy', 'object:body'], by: 'Sedláček', requires: ['body'], title: 'Autopsy', offer: 'I will attend the autopsy.',
       levels: [
         {
           hours: 24,
@@ -517,11 +586,11 @@ window.CASE = {
       ],
     },
     {
-      id: 'warrant', by: 'Novák', requiresAny: ['contra:pavel', 'idcard_pavel', 'body'], title: 'Ask the prosecutor for a search warrant for the house', offer: 'We have enough for a proper search of Kostka\'s house. I can get the warrant.',
+      id: 'warrant', on: 'place:house', by: 'Novák', requiresAny: ['contra:pavel', 'idcard_pavel', 'body'], title: 'Ask the prosecutor for a search warrant for the house', offer: 'We have enough for a proper search of Kostka\'s house. I can get the warrant.',
       levels: [{ hours: 4, report: 'The prosecutor signed it.', effects: [{ t: 'flag', id: 'warrant' }] }],
     },
     {
-      id: 'searchHouse', by: 'Horáková', requires: ['warrant'], title: 'Forensic search of the house', offer: 'Warrant is signed. Let me take the technicians to the house.',
+      id: 'searchHouse', on: 'place:house', by: 'Horáková', requires: ['warrant'], title: 'Forensic search of the house', offer: 'Warrant is signed. Let me take the technicians to the house.',
       levels: [
         {
           hours: 8,
@@ -547,7 +616,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'ballistics', by: 'Sedláček', requires: ['rifle_seized', 'bullet'], title: 'Ballistics: Pavel\'s rifle vs. the bullets', offer: 'We have his rifle and the fragments. Ballistics?',
+      id: 'ballistics', on: 'object:rifles', by: 'Sedláček', requires: ['rifle_seized', 'bullet'], title: 'Ballistics: Pavel\'s rifle vs. the bullets', offer: 'We have his rifle and the fragments. Ballistics?',
       levels: [
         {
           hours: 48,
@@ -557,7 +626,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'arrest', by: 'Novák', requires: ['body'], requiresAny: ['contra:pavel', 'idcard_pavel', 'blood'], title: 'Arrest Pavel Kostka', offer: 'That is enough. I can pick up Kostka.',
+      id: 'arrest', on: 'person:pavel', by: 'Novák', requires: ['body'], requiresAny: ['contra:pavel', 'idcard_pavel', 'blood'], title: 'Arrest Pavel Kostka', offer: 'That is enough. I can pick up Kostka.',
       levels: [
         {
           hours: 2,
@@ -571,7 +640,7 @@ window.CASE = {
       ],
     },
     {
-      id: 'interrogate', by: 'Novák', requires: ['arrested'], title: 'Interrogate Pavel Kostka', offer: 'Let me sit with him.',
+      id: 'interrogate', on: 'person:pavel', by: 'Novák', requires: ['arrested'], title: 'Interrogate Pavel Kostka', offer: 'Let me sit with him.',
       levels: [
         { hours: 4, report: 'He denies everything for four hours. "She left me. I don\'t know anything."', effects: [] },
         {

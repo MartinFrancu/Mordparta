@@ -18,7 +18,9 @@ To play a different case, change the `<script src="cases/...">` line in `index.h
 | `trial` | `strengthFlags` (counted) + `verdicts: [{min, text}]` (first with `strength >= min` wins) |
 
 ## Leads
-`{id, by, title, offer, requires, requiresAny, hiddenBy, levels: [{hours, report, effects, offer?}]}`
+`{id, on, by, title, offer, requires, requiresAny, hiddenBy, levels: [{hours, report, effects, offer?}]}`
+- `on`: where the action is shown – `'person:id'`, `'place:id'` or `'object:id'`, or a list (first revealed one wins, e.g. `['object:phoneK', 'person:klara']`).
+  The lead stays hidden until that target is revealed. Without `on` it goes to a "General leads" card.
 - Visible when all `requires` flags are set, at least one of `requiresAny` (if given), none of `hiddenBy`.
 - Each assignment plays the next level. After the last level the lead disappears.
 
@@ -29,6 +31,7 @@ To play a different case, change the `<script src="cases/...">` line in `index.h
 | `person` | `id` | reveals a person |
 | `info` | `id, key, text` | adds a line to a person |
 | `object` | `id, text?` | reveals an object / adds a note |
+| `place` | `id, text?` | reveals a place / adds a note (a `tl` entry also reveals its place silently) |
 | `tl` | `who, where, from, to?, status: confirmed\|claimed, text, id?` | timeline entry |
 | `tnote` | `id, effect: support\|weaken\|ruleout, text` | note on a theory |
 | `slot` | `id, slot, value` | fills a theory slot |
