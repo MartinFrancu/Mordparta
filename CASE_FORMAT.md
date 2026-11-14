@@ -1,11 +1,13 @@
 # Case format
 
-A case is one JS file in `cases/` that sets `window.CASE = {...}`. Pure content – the engine (`src/engine.js`) has no case knowledge.
-To play a different case, change the `<script src="cases/...">` line in `index.html`.
+A case is one JS file in `cases/` that does `(window.CASES = window.CASES || []).push({...})`. Pure content – the engine (`src/engine.js`) has no case knowledge.
+Add its `<script>` to `index.html`; the order of scripts is the order in the case picker. Play directly with `index.html?case=<id>`.
+Wrap helper constants in a `{ }` block – all case files share the page.
 
 ## Top level
 | key | meaning |
 |---|---|
+| `id`, `teaser` | URL id and one-line description for the case picker |
 | `title`, `intro`, `introEffects` | opening briefing and what is known at start |
 | `start` | game clock start, `'YYYY-MM-DD HH:MM'` (all times use this format) |
 | `dayLimit` | days until game over; `timeUp` = game-over text |

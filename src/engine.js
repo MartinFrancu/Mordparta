@@ -325,7 +325,7 @@
     S.over = true;
     render();
     modal('<h2>Verdict</h2><p>' + esc(v.text) + '</p><div class="changes">Solved on day ' + (Math.floor(S.t / 24) + 1) + ' of ' + C.dayLimit +
-      '. Evidence strength: ' + strength + ' / ' + C.trial.strengthFlags.length + '.</div><p><button onclick="location.reload()">Play again</button></p>');
+      '. Evidence strength: ' + strength + ' / ' + C.trial.strengthFlags.length + '.</div><p><button onclick="location.reload()">Play again</button> <button onclick="location.href=location.pathname">Other cases</button></p>');
   }
 
   // ---------- start ----------

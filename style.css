@@ -62,3 +62,4 @@ h2 { font-size:16px; margin:0 0 8px; color:var(--acc); }
 .lead.d2 { border-left-color:#d9773f; } .lead.d2 .lv, .lead.d2 .keep { background:#d9773f; }
 .lead.d3 { border-left-color:var(--bad); } .lead.d3 .lv, .lead.d3 .keep { background:var(--bad); }
 .lead .keep { color:#111; padding:0 3px; border-radius:2px; }
+#modal-box a { color:var(--acc); }

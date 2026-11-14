@@ -21,6 +21,16 @@
 </main>
 <div id="modal" hidden><div id="modal-box"></div></div>
 <script src="cases/zmizela.js"></script>
-<script src="src/engine.js"></script>
+<script>
+  // Case picker: ?case=<id> plays that case, otherwise show the list (first = newest).
+  (function () {
+    const id = new URLSearchParams(location.search).get('case');
+    window.CASE = window.CASES.find((c) => c.id === id);
+    if (window.CASE) { const s = document.createElement('script'); s.src = 'src/engine.js'; document.body.appendChild(s); return; }
+    document.getElementById('modal-box').innerHTML = '<h2>Mordparta – pick a case</h2>' + window.CASES.map((c) =>
+      '<div class="card"><h3><a href="?case=' + c.id + '">' + c.title + '</a></h3><div class="dim">' + (c.teaser || '') + '</div></div>').join('');
+    document.getElementById('modal').hidden = false;
+  })();
+</script>
 </body>
 </html>

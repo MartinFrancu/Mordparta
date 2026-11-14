@@ -1,5 +1,6 @@
 // CASE CONTENT ONLY – no logic. Format: see CASE_FORMAT.md.
 // Loosely based on a real 2014 case from the Pardubice region. Names, places and most details are invented.
+{ // block scope: case files share the page
 const BODY_FOUND = [
   { t: 'object', id: 'body', text: 'Buried 60 cm deep in a tarp, 200 m from Pavel\'s feeder in Bor.' },
   { t: 'check', id: 'body', text: 'Found in Bor forest near Pavel\'s feeder.' },
@@ -10,8 +11,10 @@ const BODY_FOUND = [
   { t: 'flag', id: 'body' },
 ];
 
-window.CASE = {
+(window.CASES = window.CASES || []).push({
+  id: 'zmizela',
   title: 'The Vanished Pharmacist',
+  teaser: 'Pardubice region, March 2014. A pharmacy assistant leaves for the bus and never arrives.',
   start: '2014-03-13 08:00',
   dayLimit: 100,
   operatives: ['Novák', 'Horáková', 'Sedláček'],
@@ -661,4 +664,5 @@ window.CASE = {
       { min: 0, text: 'The case is thin. The court convicts only of manslaughter – 8 years. Klára\'s mother leaves the courtroom without a word.' },
     ],
   },
-};
+});
+}
